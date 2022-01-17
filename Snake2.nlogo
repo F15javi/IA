@@ -1,5 +1,6 @@
 patches-own [
-  snake-lenght
+  snake-lenght1
+  snake-lenght2
   father     ; Previous patch in this partial path
   Cost-path  ; Stores the cost of the path to the current patch
   visited?   ; has the path been visited previously? That is,
@@ -8,12 +9,15 @@ patches-own [
 ]
 
 globals [
-  score
+  score1
+  score2
   new-heading
   old-heading
-  p-food     ; Position of the food
+
   p-valids   ; Valid Patches for moving not wall)
-  Start      ; Starting patch
+  p-valids2   ; Valid Patches for moving not wall)
+  Start1     ; Starting patch
+  Start2
   Final-Cost ; The final cost of the path given by A*
 ]
 
@@ -22,13 +26,22 @@ globals [
 to setup
   ca
 
-  set score 0
+  set score1 0
+  set score2 0
    cro 1 [
 
     set shape "square"
     set size 1.2
     set color blue
-    setxy 16 16
+
+
+  ]
+  cro 1 [
+
+    set shape "square"
+    set size 1.2
+    set color brown
+
 
   ]
   Ask patches
@@ -45,9 +58,9 @@ to setup
   [set  pcolor yellow]
   ask patches with [abs pxcor = 0 or abs pycor = 0 or abs pxcor = 32 or abs pycor = 32] [set pcolor red]
   set p-valids patches with [pcolor = green or pcolor = yellow]
-
-  set start one-of patches with [pxcor = 16 and pycor = 17]
-
+  set p-valids2 patches with [pcolor = green or pcolor = yellow]
+  set start1 one-of patches with [pxcor = 16 and pycor = 17]
+  set start2 one-of patches with [pxcor = 10 and pycor = 10]
 
 end
 
@@ -169,28 +182,57 @@ to-report A* [#Start #Goal #valid-map]
   ]
 end
 
-to-report Look-for-Goal
+to-report Look-for-Goal1
 
 
   let Goal one-of patches with [pcolor = yellow]
 
   ; Compute the path between Start and Goal
-  let path A* Start Goal p-valids
-  set p-valids patches with [pcolor != blue and pcolor != red]
-  print "#####################"
-  print start
-  print Goal
-  print p-valids
+  let path A* Start1 Goal p-valids
+  set p-valids patches with [pcolor != blue and pcolor != red and pcolor != brown]
+
+
   ; If any...
-  print path
+
   if path != false [
 
 
 
 
     ; Set the Goal and the new Start point
-    if length path > 1 [set Start item 1 path]
-    if length path <= 1 [set Start Goal]
+    if length path > 1 [set Start1 item 1 path]
+    if length path <= 1 [set Start1 Goal]
+
+
+
+    report path
+  ]
+
+end
+to-report Look-for-Goal2
+
+
+  let Goal2 one-of patches with [pcolor = yellow]
+
+  ; Compute the path between Start and Goal
+  let path A* Start2 Goal2 p-valids2
+  set p-valids2 patches with [pcolor != blue and pcolor != red and pcolor != brown]
+
+
+
+  print "#######################"
+  print Start2
+  print Goal2
+  print path
+
+  if path != false [
+
+
+
+
+    ; Set the Goal and the new Start point
+    if length path > 1 [set Start2 item 1 path]
+    if length path <= 1 [set Start2 Goal2]
 
 
 
@@ -202,25 +244,48 @@ end
  to go
   LET not-dead true
 
-  let camino Look-for-Goal
+  let camino1 Look-for-Goal1
+  let camino2 Look-for-Goal2
 
-  ask turtles with [who = 0] [move-to item 0 camino
+  ask turtles with [who = 0] [move-to item 0 camino1
    if pcolor = red  or pcolor = black [set not-dead false]
 
     if pcolor = yellow
     [
-      set score (score + 1)
+      set score1 (score1 + 1)
       ask one-of patches with [distance turtle 0 > 5 AND pcolor = green]
       [set pcolor yellow]
     ]
 
 
-  set snake-lenght score + 5
+  set snake-lenght1 score1 + 5
     set pcolor blue
 
-  ask patches with [snake-lenght > 0]
-  [set snake-lenght (snake-lenght - 1)
-    If snake-lenght = 0 [set pcolor green]]
+  ask patches with [snake-lenght1 > 0]
+  [set snake-lenght1 (snake-lenght1 - 1)
+    If snake-lenght1 = 0 [set pcolor green]]
+
+  ]
+    If not-dead = false [finish-game stop]
+  wait 1 / 8
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ask turtles with [who = 1] [move-to item 0 camino2
+   if pcolor = red  or pcolor = black [set not-dead false]
+
+    if pcolor = yellow
+    [
+      set score2 (score2 + 1)
+      ask one-of patches with [distance turtle 0 > 5 AND pcolor = green]
+      [set pcolor yellow]
+    ]
+
+
+  set snake-lenght2 score2 + 5
+    set pcolor brown
+
+  ask patches with [snake-lenght2 > 0]
+  [set snake-lenght2 (snake-lenght2 - 1)
+    If snake-lenght2 = 0 [set pcolor green]]
 
   ]
     If not-dead = false [finish-game stop]
@@ -387,13 +452,24 @@ NIL
 1
 
 MONITOR
-82
-284
-139
-329
-SCORE
-score
+50
+280
+112
+325
+SCORE 1
+score1
 0
+1
+11
+
+MONITOR
+120
+280
+182
+325
+SCORE 2
+score2
+17
 1
 11
 
