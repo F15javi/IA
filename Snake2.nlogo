@@ -39,13 +39,16 @@ to setup
     set visited? false
     set active? false
   ]
-  set p-valids patches with [pcolor = green]
 
-  set start one-of patches with [pxcor = 16 and pycor = 17]
 
   ask one-of patches with [distancexy 0 0 > 5 AND abs pxcor != 16 and abs pycor != 16]
   [set  pcolor yellow]
   ask patches with [abs pxcor = 0 or abs pycor = 0 or abs pxcor = 32 or abs pycor = 32] [set pcolor red]
+  set p-valids patches with [pcolor = green or pcolor = yellow]
+
+  set start one-of patches with [pxcor = 16 and pycor = 17]
+
+
 end
 
 
@@ -168,12 +171,21 @@ end
 
 to-report Look-for-Goal
 
+
   let Goal one-of patches with [pcolor = yellow]
+
   ; Compute the path between Start and Goal
   let path A* Start Goal p-valids
+  set p-valids patches with [pcolor != blue and pcolor != red]
+  print "#####################"
+  print start
+  print Goal
+  print p-valids
   ; If any...
+  print path
   if path != false [
-    print path
+
+
 
 
     ; Set the Goal and the new Start point
@@ -184,14 +196,16 @@ to-report Look-for-Goal
 
     report path
   ]
+
 end
 
  to go
   LET not-dead true
+
   let camino Look-for-Goal
 
-  ask turtles with [who = 0] [move-to item 1 camino
-   if pcolor = red  or pcolor = blue [set not-dead false]
+  ask turtles with [who = 0] [move-to item 0 camino
+   if pcolor = red  or pcolor = black [set not-dead false]
 
     if pcolor = yellow
     [
@@ -200,12 +214,14 @@ end
       [set pcolor yellow]
     ]
 
-  set pcolor blue
-      set snake-lenght score + 5
+
+  set snake-lenght score + 5
+    set pcolor blue
 
   ask patches with [snake-lenght > 0]
   [set snake-lenght (snake-lenght - 1)
     If snake-lenght = 0 [set pcolor green]]
+
   ]
     If not-dead = false [finish-game stop]
   wait 1 / 8
@@ -723,5 +739,5 @@ true
 Line -7500403 true 150 150 90 180
 Line -7500403 true 150 150 210 180
 @#$#@#$#@
-0
+1
 @#$#@#$#@
